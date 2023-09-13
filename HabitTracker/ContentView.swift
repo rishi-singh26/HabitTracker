@@ -8,14 +8,56 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject var habits = Habits()
+    @State private var searchtext = ""
+    @State private var showingAddHabitSheet = false
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        NavigationView {
+            List {
+                ForEach(habits.items) { habit in
+                    NavigationLink {
+                        HabitDetail(habits: habits, habit: habit)
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("\(habit.name)")
+                                    .font(.headline)
+                                Text("\(habit.habitRepetation)")
+                            }
+                            Spacer()
+                            Text("\(habit.completionDates.count)")
+                        }
+                    }
+                }
+                .onDelete(perform: delete)
+            }
+            .navigationTitle("Habit Tracker")
+            .searchable(text: $searchtext)
+            .toolbar {
+                ToolbarItem(placement: .bottomBar) {
+                    HStack {
+                        Button {
+                            showingAddHabitSheet = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                Text("New Habit")
+                                    .font(.headline.bold())
+                            }
+                        }
+                        Spacer()
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddHabitSheet) {
+                AddHabit(habits: habits)
+            }
         }
-        .padding()
+    }
+    
+    func delete(at indexSet: IndexSet) {
+        habits.items.remove(atOffsets: indexSet)
     }
 }
 
